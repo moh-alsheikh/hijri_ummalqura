@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.email         = ["msheikh2009@yahoo.com"]
   spec.description   = %q{Class to convert hijri to/from Julian Date.}
   spec.summary       = %q{Hijri Umm Alqura date object}
-  spec.homepage      = "https://github.com/moh-alsheikh/hijriummalqura"
+  spec.homepage      = "https://github.com/moh-alsheikh/hijri_ummalqura"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files`.split($/)

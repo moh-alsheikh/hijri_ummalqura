@@ -5,7 +5,7 @@
 
 # Thanks for Keith Wood who implemented UmmAlQura calendar in javascript.
 # keith-wood.name 
-# Many thank for Murtaza Gulamali for his work in hijri date gem, I really inspired by your work.
+# Many thanks for Murtaza Gulamali for his work in hijri date gem, I really inspired by your work.
 # https://github.com/mygulamali/hijri_date
 
 require "date"

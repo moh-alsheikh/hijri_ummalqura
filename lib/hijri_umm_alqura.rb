@@ -1,7 +1,12 @@
 # -*- coding: utf-8 -*-
+
 # implimintation of UmmAlQura calendar 
-# by Mohammed Alsheikh Novmber 2013.
-# This work originally implemented in javascript by Keith Wood  keith-wood.name
+# by Mohammed Alsheikh December 2013.
+
+# Thanks for Keith Wood who implemented UmmAlQura calendar in javascript.
+# keith-wood.name 
+# Many thank for Murtaza Gulamali for his work in hijri date gem, I really inspired by your work.
+# https://github.com/mygulamali/hijri_date
 
 require "date"
 require "hijri_umm_alqura/constants"
@@ -28,64 +33,44 @@ module HijriUmmAlqura
   
     # Hijri to julian 
     def jd(date = self)
-        
       index = (12 * (date.year - 1)) + date.month - 16260
       mcjdn = date.day + HijriUmmAlqura::UMMALQURA_DAT[index - 1] - 1
       mcjdn = mcjdn + 2400000 - 0.5
-        
       return mcjdn
     end
       
     # Hijri to gregorian
-    def gd(date = self)
-        
+    def gd(date = self)        
       j_date = jd(date)
       g_date = HijriUmmAlqura.jd_to_gd(j_date)
-      gregorian_date = format_date(g_date)     
-        
-      return gregorian_date
+      return g_date
     end
             
     # Add Days - Weeks - Months - Years
     def add(date = self, offset, period)
-      # ADD YEARS  
       y = period == 'y' ? (date.year + offset) : date.year 
-      # ADD MONTHS
       m = period == 'm' ? (month_of_year(date.year, date.month) + offset) : month_of_year(date.year, date.month) 
       d = date.day
-        
       begin
-        # ADD DAYS OR WEEKS 
         if (period == 'd' || period == 'w') 
-          
           week_days = period == 'w' ? 7 : 1
           j_date = jd
           j_date = j_date + offset * week_days 
           result = HijriUmmAlqura.jd(j_date)
-          
-          return format_date(result)
-          
+          return result
         elsif (period == 'm') 
-          
           rys = resync_year_month(y, m)
           y  = rys[0]
           m = rys[1]
-          
-          return format_date([y, m, d])
-          
+          return HijriUmmAlqura.format_date([y, m, d])
         elsif (period == 'y') 
-          
-          return format_date([y, m, d])
-          
+          return HijriUmmAlqura.format_date([y, m, d])
         end
-       
-      rescue Exception => msg  
-        puts msg 
+      rescue Exception => e  
+        puts "Exception details: #{e.class} #{e.message}" 
       end
-      
     end
    
-    #-------------------------------------------
     def resync_year_month(y, m)
       if m < 1
         while (m < 1)
@@ -103,24 +88,15 @@ module HijriUmmAlqura
       
       return [y,m]
     end
-      
-    #-------------------------------------------
-    def from_month_of_year(year, ord) 
-      m = (ord + 1 -2 * 1) % months_in_year + 1
-      return m
-    end
-      
-    #-------------------------------------------
+
     def month_of_year(year,month)
       return (month + months_in_year - 1) % months_in_year + 1
     end
         
-    #-------------------------------------------
     def months_in_year
       return 12
     end
-      
-    #-------------------------------------------
+        
     def days_in_month
       mcjdn = jd - 2400000 + 0.5
       index = 0
@@ -131,61 +107,40 @@ module HijriUmmAlqura
         i+=1      
         index+=1
       end
-        
       return 30
     end
-      
-    #-------------------------------------------  
-    def dayofweek(year, month, day) 
-      ((HijriUmmAlqura.gd_to_jd(year.to_i, month.to_i, day.to_i).floor + 2) % 7)
+        
+    # comparison operator
+    def == (date)
+      if date.is_a?(HijriUmmAlqura::Hijri)
+        if date.year == self.year and date.month == self.month and date.day == self.day
+          return true
+        end
+        return false
+      end
+      raise TypeError, 'expected HijriDate::Date'
     end
-      
-    #-------------------------------------------
-    def weekday(year, month, day) 
-      dayofweek(year, month, day)  unless dayofweek(year, month, day) != 5
-    end
-      
-    # return today in hijri plus n days 
+    
+    # return hijri date plus n days 
     def + (n)
-      t = today.split("-")
       case n
-      when Numeric then
-        return  format_date(add_days(t[0], t[1], t[2], n ) )
+      when Numeric then  
+        j_date = jd + n * 1 
+        result = HijriUmmAlqura.jd(j_date)
+        return result
       end
       raise TypeError, 'expected numeric'
     end
-    
-    # Today Hijri
-    def today(date = self)  
-      today = self.to_s
-      return today
-    end
   
-    # Retrive the day of week
-    def dayofweekname(input)
-      d = DateTime.new(input[0].to_i,input[1].to_i,input[2].to_i,0,0,0,'+03:00')
-      d = weekday(d.strftime("%Y"), d.strftime("%m") ,d.strftime("%d"))        
-      puts d
-      #case d.to_i
-      #when 0 then "السبت"
-      #when 1 then "الأحد"
-      #when 2 then "الإثنين"
-      #when 3 then "الثلاثاء"
-      #when 4 then "الأربعاء"
-      #when 5 then "الخميس"
-      #when 6 then "الجمعة"
-      #else
-      #end
-    end  
-    
-    # Add left zero to day - month 
-    def add_left_zero(input)
-      input.to_s.rjust(2,'0')
-    end
-  
-    # Format date to yyyy-mm-dd
-    def format_date(input)    
-      today = input[0].to_s + "-" + add_left_zero(input[1].to_s) + "-" + add_left_zero(input[2].to_s)
+    # return hijri date minus n days 
+    def - (n)
+      case n
+      when Numeric then  
+        j_date = jd - n * 1 
+        result = HijriUmmAlqura.jd(j_date)
+        return result
+      end
+      raise TypeError, 'expected numeric'
     end
   
     # Convert arabic numbers to hindi numbers
@@ -209,20 +164,22 @@ module HijriUmmAlqura
       end
       text
     end
-    
   end
-    
-  #-------------------------------------------------------------------
-  # =>        MODULE METHODS
-  #-------------------------------------------------------------------
+  
+  #-------------------------------------------------------------------  
+  # MODULE METHODS
+
+  # Format date to yyyy-mm-dd
+  def HijriUmmAlqura.format_date(input)    
+    today = input[0].to_s + "-" + (input[1].to_s).to_s.rjust(2,'0') + "-" + (input[2].to_s).to_s.rjust(2,'0')
+  end
     
   #  julian to hijri
   def HijriUmmAlqura.jd(jd = 2456641.5)
-    
     mcjdn = jd - 2400000 + 0.5
     index = 0
     i = 0
-  
+
     for i in 0..HijriUmmAlqura::UMMALQURA_DAT.length
       break if (HijriUmmAlqura::UMMALQURA_DAT[i] > mcjdn)
       i+=1      
@@ -231,32 +188,27 @@ module HijriUmmAlqura
       
     lunation = index + 16260
     ii = ((lunation - 1) / 12).floor
-  
     year = ii + 1
     month = lunation - 12 * ii
     day = (mcjdn - HijriUmmAlqura::UMMALQURA_DAT[index - 1] + 1).to_i
-	
-    return [year, month, day]
+    h_date = HijriUmmAlqura.format_date([year, month, day])
+    return h_date
   end
     
   # gregorian to julian 
   def HijriUmmAlqura.gd_to_jd(year, month, day)
     year = 1 if year < 0
-
     if ( month < 3 ) 
       month = month + 12
       year = year - 1 
     end
-
     a = (year / 100).floor
     b = 2 - a + (a / 4).floor
-  
     return (365.25 * (year + 4716)).floor + (30.6001 * (month + 1)).floor + day + b - 1524.5
   end
     
   # Julian to gregorian
   def HijriUmmAlqura.jd_to_gd(jd)
-
     z = (jd + 0.5).floor
     a = ((z - 1867216.25) / 36524.25).floor
     a = z + 1 + a -(a / 4).floor
@@ -264,78 +216,59 @@ module HijriUmmAlqura
     c = ((b - 122.1) / 365.25).floor
     d = (365.25 * c).floor
     e = ((b - d) / 30.6001).floor
-  
     day = b - d - (e * 30.6001).floor
     month = e - (e > 13.5 ? 13 : 1)
     year = c - (month > 2.5 ? 4716 : 4715)
-  
     year = 1 if year <= 0 
-       
-    return year, month, day
+    g_date = HijriUmmAlqura.format_date([year, month, day])
+    return g_date
   end
-    
-    
-  # Gregorian to hijri
-  def HijriUmmAlqura.gd_to_hd(year, month, day)
-      
+  
+  # hijri to gregorian 
+  def HijriUmmAlqura.hd_to_gd(year, month, day)
     begin
-      j_date = HijriUmmAlqura.gd_to_jd(year,month,day)
-      h_date = HijriUmmAlqura.jd(j_date)
-      hijri_date = format_date(h_date)
+      h_date = HijriUmmAlqura::Hijri.new(year, month, day)
+      g_date = h_date.gd.split('-')
+      g_date = HijriUmmAlqura.format_date(g_date)
     rescue ArgumentError 
       raise ArgumentError.new("Only numbers are allowed")
     end
-      
-    return hijri_date
+    return g_date
+  end  
+  
+  # Hijri to julian 
+  def HijriUmmAlqura.hd_to_jd(year, month, day)
+    index = (12 * (year - 1)) + month - 16260
+    mcjdn = day + HijriUmmAlqura::UMMALQURA_DAT[index - 1] - 1
+    mcjdn = mcjdn + 2400000 - 0.5
+    return mcjdn
   end
     
-end
-
-##########################################################
-# Use examples for hijri 
-##########################################################
-hijri_date = HijriUmmAlqura::Hijri.new(1435,2,12)
+  # Gregorian to hijri
+  def HijriUmmAlqura.gd_to_hd(year, month, day)
+    begin
+      j_date = HijriUmmAlqura.gd_to_jd(year,month,day)
+      h_date = HijriUmmAlqura.jd(j_date)
+    rescue ArgumentError 
+      raise ArgumentError.new("Only numbers are allowed")
+    end
+    return h_date
+  end
+  
+  # Days in month
+  def HijriUmmAlqura.days_in_month(year, month, day)
+    jd = HijriUmmAlqura.hd_to_jd(year, month, day)
+    mcjdn = jd - 2400000 + 0.5
+    index = 0
     
-# 1- return julian date  =>   2456641.5
-puts hijri_date.jd
-
-# 2- return formated hijri date =>   ١٢ صفر ١٤٣٥ هـ
-puts hijri_date
-
-# 3- return gregorian date  =>   2456641.5
-puts hijri_date.gd
-
-
-# return gregorian date
-#puts hijri_date.gd
-  
-# return hijri date from julian
-#puts HijriUmmAlqura.jd(2456641.5)
-  
-# return hijri date after adding [days-weeks-months-years]
-#puts hijri_date.add(55, 'm')
-
-# Convert Gregorian to Hijri (yyyy,mm,dd)
-#puts hijri_date.HijriUmmAlqura.gd_to_hd(2014,4,13)
-
-# Convert Hijri to Gregorian (yyyy,mm,dd)
-#puts hijri_date.gd(1435,1,30)
-
-# current date in hijri
-# puts hijri_date.today
-
-# Current date in hijri with name of month and day
-
-#for i in (1..30) do  
-#  d = hijri_date.today.split("-")
-#  hdate  = hijri_date.today_with_month_and_day_names(2013,11,i)
-#  mdate = hijri_date.jd_to_gd(hijri_date.HijriUmmAlqura.gd_to_jd(2013,11,i))
-#  puts  hdate + " >> " + mdate.to_s
-#end
-
-#puts hijri_date + 6000
-
-# Convert Gregorian to Hijri (yyyy,mm,dd) with name of month and day
-#puts hijri_date.today_with_month_and_day_names(2013,10,30)
-
-#puts hijri_date.add_days('1435', '01', '15' , 15 )
+    for i in 0..HijriUmmAlqura::UMMALQURA_DAT.length
+      if HijriUmmAlqura::UMMALQURA_DAT[i]  && (HijriUmmAlqura::UMMALQURA_DAT[i] > mcjdn)
+        return (HijriUmmAlqura::UMMALQURA_DAT[index] - HijriUmmAlqura::UMMALQURA_DAT[index - 1])
+      end
+      i+=1      
+      index+=1
+    end
+      
+    return 30
+  end    
+end

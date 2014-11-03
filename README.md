@@ -51,23 +51,23 @@ And then execute:
 
 #### Start with a new hijri date:
  
-  hijridob = HijriUmmAlqura::Hijri.new(1433,11,30)
+    hijridob = HijriUmmAlqura::Hijri.new(1433,11,30)
 
 #### Get the julian date: 
   
-  hijridob.jd 
+    hijridob.jd 
   
 #### Get the julian date: 
   
- hijridob.gd
+    hijridob.gd
  
 ####Add Days - Weeks - Months - Years to current hijri date:
 
- hijridob.add(10,'d')
+    hijridob.add(10,'d')
  
- hijridob.add(4,'m')
+    hijridob.add(4,'m')
  
- hijridob.add(2,'y')
+    hijridob.add(2,'y')
 
 #### Get how many days in current month:
  
@@ -77,19 +77,19 @@ And then execute:
 
 #### convert from gregorian to julian 
   
-  HijriUmmAlqura.gd_to_jd(1960, 3, 1)
+    HijriUmmAlqura.gd_to_jd(1960, 3, 1)
   
 #### convert from julian to gregorian
   
-  HijriUmmAlqura.jd_to_gd(2456641.5)
+    HijriUmmAlqura.jd_to_gd(2456641.5)
   
 #### convert from hijri to gregorian 
   
- HijriUmmAlqura.hd_to_gd(1388, 5, 17)
+    HijriUmmAlqura.hd_to_gd(1388, 5, 17)
  
 #### convert from gregorian to hijri
 
- HijriUmmAlqura.gd_to_hd(1970, 11, 18)
+    HijriUmmAlqura.gd_to_hd(1970, 11, 18)
 
 ## Contributing
 
